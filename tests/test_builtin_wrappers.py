@@ -1,5 +1,5 @@
 import pytest
-from src import builtin_wrappers as bw
+from src import builtin as bw
 
 
 @pytest.fixture()
