@@ -17,7 +17,7 @@ class LaplaceDistribution:
 
     def ppf(self, p):
         if p < 0 or p > 1:
-            raise ValueError("p értékének 1 és 0 között kell lennie")
+            raise ValueError("p értékének 0 és 1 között kell lennie")
         if p < 0.5:
             return self.loc + self.scale * math.log(2 * p)
         else:
