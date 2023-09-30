@@ -86,31 +86,28 @@ class ParetoDistribution:
 
     def mean(self):
         if self.shape <= 1:
-            raise Exception("Moment undefined")
+            return math.inf
         else:
             return (self.shape * self.scale) / (self.shape - 1)
 
     def variance(self):
         if self.shape <= 2:
-            raise Exception("Moment undefined")
+            return math.inf
         else:
             return (self.scale ** 2 * self.shape) / ((self.shape - 1) ** 2 * (self.shape - 2))
 
     def skewness(self):
         if self.shape <= 3:
-            raise Exception("Moment undefined")
+            return math.inf
         else:
             return (2 * (1 + self.shape)) / (self.shape - 3) * math.sqrt((self.shape - 2) / self.shape)
 
     def ex_kurtosis(self):
         if self.shape <= 4:
-            raise Exception("Moment undefined")
+            return math.inf
         else:
             return 6 * ((self.shape ** 3 + self.shape ** 2 - 6 * self.shape - 2) / (
                         self.shape * (self.shape - 3) * (self.shape - 4)))
 
     def mvsk(self):
-        if self.shape <= 1:
-            raise Exception("Moment undefined")
-        else:
-            return [self.mean(), self.variance(), self.skewness(), self.ex_kurtosis()]
+        return [self.mean(), self.variance(), self.skewness(), self.ex_kurtosis()]
