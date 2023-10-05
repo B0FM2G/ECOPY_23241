@@ -78,7 +78,7 @@ class NormalDistribution:
         return self.loc + self.scale**0.5 * (2 ** 0.5) * pyerf.erfinv(2 * p - 1)
 
     def gen_rand(self):
-        return random.normalvariate(self.loc,self.scale)
+        return self.ppf(self.rand.random())
 
     def mean(self):
         return self.loc
@@ -218,7 +218,7 @@ class ChiSquaredDistribution:
             raise ValueError("p-nek 0 és 1 között kell lennie")
 
     def gen_rand(self):
-        return sum(random.gauss(0, 1) ** 2 for _ in range(int(self.dof)))
+        return self.ppf(self.rand.random())
 
     def mean(self):
         return self.dof
