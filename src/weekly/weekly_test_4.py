@@ -43,21 +43,9 @@ def sliced_view(input_df, column_to_keep, column_to_filter,rows_to_keep):
 
 new_df = df_data.copy()
 def generate_quartile(input_df):
-       golok = list(input_df['Goals'])
-       kvartilis = []
-       for i in golok:
-              if i > 5:
-                     golok.append(1)
-              elif i ==5:
-                     golok.append(2)
-              elif i >3 and i <5:
-                     golok.append(3)
-              else:
-                     golok.append(4)
-       input_df['Quartile']=kvartilis
-       return input_df
-input_df['Quartile'] = pd.cut(input_df['Lőtt gólok'], [0, 2, 4, 5, 12], labels=[4, 3, 2, 1])
-return input_df
+    input_df['Quartile'] = pd.cut(input_df['Goals'], [0, 2, 4, 5, 12], labels=[4, 3, 2, 1])
+    return input_df
+
 def average_yellow_in_quartiles(input_df):
     return input_df.pivot_table(values="Passes", index="Quartile")
 
