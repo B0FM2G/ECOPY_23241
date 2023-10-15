@@ -1,57 +1,61 @@
 import pandas as pd
-df_data = pd.read_csv('../data/Euro_2012_stats_TEAM.csv')
-df_data
+from pytest import approx
+import random
+from src.weekly.weekly_test_2 import ParetoDistribution
 
-new_df = df_data.copy()
+euro12 = pd.read_csv('../../data/Euro_2012_stats_TEAM.csv')
+new_df = euro12.copy()
+
 def number_of_participants(input_df):
     csapat = input_df['Team'].count()
     return csapat
 
-new_df = df_data.copy()
 def goals(input_df):
     return input_df[['Team', 'Goals']]
 
-new_df = df_data.copy()
 def sorted_by_goal(input_df):
     return goals(input_df).sort_values("Goals", ascending=False)
 
-new_df = df_data.copy()
 def avg_goal(input_df):
     return input_df['Goals'].mean()
 
-new_df = df_data.copy()
 def countries_over_five(input_df):
-    return input_df['Team'][input_df['Goals']>=6]
+    return pd.DataFrame(input_df['Team'][input_df['Goals']>=6])
 
-new_df = df_data.copy()
 def countries_starting_with_g(input_df):
     return input_df['Team'][input_df['Team'].str.startswith('G')]
 
-new_df = df_data.copy()
 def first_seven_columns(input_df):
     return input_df.iloc[:,0:7]
 
-new_df = df_data.copy()
 def every_column_except_last_three(input_df):
     return input_df.iloc[:,:-3]
 
-new_df = df_data.copy()
-def sliced_view(input_df, column_to_keep, column_to_filter,rows_to_keep):
-    selected_columns = input_df[columns_to_keep]
-    filtered_rows = input_df[input_df[column_to_filter].isin(rows_to_keep)]
-    return filtered_rows[selected_columns]
+def sliced_view(input_df, columns_to_keep, column_to_filter, rows_to_keep):
+    return input_df.loc[[x in rows_to_keep for x in input_df[column_to_filter]], columns_to_keep]
 
-new_df = df_data.copy()
-def generate_quartile(input_df):
-    input_df['Quartile'] = pd.cut(input_df['Goals'], [0, 2, 4, 5, 12], labels=[4, 3, 2, 1])
+def generate_quarters(input_df):
+    golok = list(input_df['Goals'])
+    kvartilis = []
+    for i in golok:
+        if i > 5:
+            kvartilis.append(1)
+        elif i == 5:
+            kvartilis.append(2)
+        elif i > 2 and i < 5:
+            kvartilis.append(3)
+        else:
+            kvartilis.append(4)
+    input_df['Quartile'] = kvartilis
     return input_df
 
 def average_yellow_in_quartiles(input_df):
-    return input_df.pivot_table(values="Passes", index="Quartile")
+    new_df2 = input_df.copy()
+    return new_df2.groupby('Quartile')['Passes'].mean()
 
 def minmax_block_in_quartile(input_df):
     grouped = input_df.groupby('Quartile')
-    minmax_values = grouped['Blocks'].agg(['min', 'max']).reset_index()
+    minmax_values = grouped['Blocks'].agg(['min', 'max'])
     return minmax_values
 
 import matplotlib.pyplot as plt
@@ -73,16 +77,19 @@ def scatter_goals_shots_by_quartile(input_df):
     return fig
 
 import random
-random.seed(42)
-pareto = ParetoDistribution(random, 1, 1)
-def generate_mean_trajectories(pareto_distribution, number_of_trajectories, length_of_trajectory):
-    result = []
+
+def gen_pareto_mean_trajectories(pareto_distribution, number_of_trajectories, length_of_trajectory):
+    pareto_distribution.rand.seed(42)
+    trajectories = []
+
     for _ in range(number_of_trajectories):
+
+        mean_trajectory = []
         trajectory = []
-        cumulative_sum = 0
-        for _ in range(length_of_trajectory):
-            random_number = pareto_distribution.gen_rand()
-            cumulative_sum += random_number
-            trajectory.append(cumulative_sum / (len(trajectory) + 1))
-        result.append(trajectory)
-    return result
+        for i in range(length_of_trajectory):
+            trajectory.append(pareto_distribution.gen_rand())
+            mean_trajectory.append(sum(trajectory) / (i + 1))
+
+        trajectories.append(mean_trajectory)
+
+    return trajectories
