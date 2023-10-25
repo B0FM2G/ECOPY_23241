@@ -25,6 +25,6 @@ class LinearRegressionSM:
 
     def get_model_goodness_values(self):
         ars = '{:.3f}'.format(round(self._model.rsquared_adj, 3))
-        ak = '{:.3f}'.format(round(self._model.aic, 3))
-        by = '{:.3f}'.format(round(self._model.bic, 3))
+        ak = '{:.2e}'.format(round(self._model.aic, 2))
+        by = '{:.2e}'.format(round(self._model.bic, 2))
         return f'Adjusted R-squared: {ars}, Akaike IC: {ak}, Bayes IC: {by}'
