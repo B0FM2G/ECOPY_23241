@@ -134,18 +134,18 @@ class LinearRegressionGLS:
         residuals = self.Y - self.X @ self.beta_params
         residual_variance = (residuals @ residuals)/ (n - k)
         H = r_matrix @ np.linalg.inv(self.X.T @ self.V_inv @ self.X) @ r_matrix.T
-        wald = (r.T @ np.linalg.inv(H) @ r) / (m * residual_variance)
-        p_value = 1 - f.cdf(wald, dfn=m, dfd=n - k)
-        return f'Wald: {wald:.3f}, p-value: {p_value:.3f}'
+        wald_value = (r.T @ np.linalg.inv(H) @ r) / (m * residual_variance)
+        p_value = 1 - f.cdf(wald_value, dfn=m, dfd=n - k)
+        return f'Wald: {wald_value:.3f}, p-value: {p_value:.3f}'
 
     def get_model_goodness_values(self):
         self.fit()
         total_sum_of_squares = self.Y.T @ self.V_inv @ self.Y
         residual_sum_of_squares = self.Y.T @ self.V_inv @ self.X @ np.linalg.inv(self.X.T @ self.V_inv @ self.X) @ self.X.T @ self.V_inv @ self.Y
-        centered_r_squared = 1 - (residual_sum_of_squares / total_sum_of_squares)
-        adjusted_r_squared = 1 - (residual_sum_of_squares / (len(self.Y) - self.X.shape[1])) * (
+        crs = 1 - (residual_sum_of_squares / total_sum_of_squares)
+        ars = 1 - (residual_sum_of_squares / (len(self.Y) - self.X.shape[1])) * (
                 len(self.Y) - 1) / total_sum_of_squares
-        return f"Centered R-squared: {centered_r_squared:.3f}, Adjusted R-squared: {adjusted_r_squared:.3f}"
+        return f"Centered R-squared: {crs:.3f}, Adjusted R-squared: {ars:.3f}"
 
 
 
