@@ -148,5 +148,50 @@ class LinearRegressionGLS:
         return f"Centered R-squared: {crs:.3f}, Adjusted R-squared: {ars:.3f}"
 
 
+import pandas as pd
+import numpy as np
+from scipy.optimize import minimize
+from scipy.stats import norm
 
+class LinearRegressionML:
+    def __init__(self, left_hand_side, right_hand_side):
+        self.left_hand_side = left_hand_side
+        self.right_hand_side = right_hand_side
 
+    def neg_loglikelihood(self, params):
+        self.X = np.column_stack((np.ones(len(self.right_hand_side)), self.right_hand_side))
+        self.Y = self.left_hand_side
+        beta0, beta1, beta2, beta3, sig = params
+        betak = np.array([beta0, beta1, beta2, beta3])
+        pred = self.X @ betak
+        LL = np.sum(norm.logpdf(self.Y, pred, sig))
+        return -LL
+
+    def fit(self):
+        result = minimize(self.neg_loglikelihood, np.array([0.1, 0.1, 0.1, 0.1, 0.1]), method='L-BFGS-B')
+        beta0, beta1, beta2, beta3, sig = result.x
+        self.beta = np.array([beta0, beta1, beta2, beta3])
+
+    def get_params(self):
+        return pd.Series(self.beta, name='Beta coefficients')
+
+    def get_pvalues(self):
+        self.fit()
+        n, k = self.X.shape
+        self.residuals = self.Y - self.X @ self.beta
+        sigma_sq = np.sum(self.residuals ** 2) / (n-k)
+        variance_beta = np.linalg.inv(self.X.T @ self.X) * sigma_sq
+        t_statistic = self.beta / np.sqrt(np.diag(variance_beta))
+        p_values = 2 * (1 - t.cdf(np.abs(t_statistic), df=n-k))
+        return pd.Series(p_values, name='P-values for the corresponding coefficients')
+
+    def get_model_goodness_values(self):
+        self.fit()
+        n, k = self.X.shape
+        beta = self.beta
+        y_pred = self.X @ beta
+        ssr = np.sum((y_pred - np.mean(self.Y)) ** 2)
+        sst = np.sum((self.Y - np.mean(self.Y)) ** 2)
+        crs = ssr / sst
+        ars = 1 - (1 - crs) * (n - 1) / (n - k)
+        return f"Centered R-squared: {crs:.3f}, Adjusted R-squared: {ars:.3f}"
