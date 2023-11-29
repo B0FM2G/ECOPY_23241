@@ -91,6 +91,56 @@ class LinearRegressionNP:
         result = f"Centered R-squared: {centered_r_squared:.3f}, Adjusted R-squared: {adjusted_r_squared:.3f}"
         return result
 
+    def get_paired_se_and_percentile_ci(self, number_of_bootstrap_samples, alpha, random_seed):
+        np.random.seed(random_seed)
+        X = np.column_stack((np.ones(len(self.right_hand_side)), self.right_hand_side))
+        y = self.left_hand_side
+        n, k = X.shape
+        beta = self.beta
+
+        bootstrap_betas = []
+        for _ in range(number_of_bootstrap_samples):
+            indices = np.random.choice(n, size=n, replace=True)
+            bootstrap_X = X[indices, :]
+            bootstrap_y = y[indices]
+            bootstrap_beta = np.linalg.inv(bootstrap_X.T @ bootstrap_X) @ bootstrap_X.T @ bootstrap_y
+            bootstrap_betas.append(bootstrap_beta[1])
+
+        bse = np.std(bootstrap_betas, ddof=1)
+
+        lb = np.percentile(bootstrap_betas, 100 * alpha / 2)
+        ub = np.percentile(bootstrap_betas, 100 * (1 - alpha / 2))
+
+        return f'Paired Bootstraped SE: {bse:.3f}, CI: [{lb:.3f}, {ub:.3f}]'
+
+    def get_wild_se_and_normal_ci(self, number_of_bootstrap_samples, alpha, random_seed):
+        np.random.seed(random_seed)
+        X = np.column_stack((np.ones(len(self.right_hand_side)), self.right_hand_side))
+        y = self.left_hand_side
+        n, k = X.shape
+        beta = self.beta
+
+        bootstrap_betas = []
+        for _ in range(number_of_bootstrap_samples):
+            indices = np.random.choice(n, size=n, replace=True)
+            bootstrap_X = X[indices, :]
+            bootstrap_y = y[indices]
+            bootstrap_residuals = (bootstrap_y - bootstrap_X @ beta)* np.random.normal(0, 1, size=n)
+            bootstrap_y = X @ beta + bootstrap_residuals
+            bootstrap_beta = np.linalg.inv(X.T @ X) @ X.T @ bootstrap_y
+            bootstrap_betas.append(bootstrap_beta[1])
+
+        bse = np.std(bootstrap_betas, ddof=1)
+
+        lb = np.percentile(bootstrap_betas, 100 * alpha / 2)
+        ub = np.percentile(bootstrap_betas, 100 * (1 - alpha / 2))
+
+        return f'Wild Bootstraped SE: {bse:.3f}, CI: [{lb:.3f}, {ub:.3f}]'
+
+
+
+
+
 import numpy as np
 import pandas as pd
 from scipy.stats import t, f
